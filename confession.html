@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Question For You</title>
+    <!-- Load Tailwind CSS for beautiful styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font -->
+    <style>
+        @import url('https://fonts.fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); /* Soft pink gradient */
+            overflow: hidden; 
+        }
+        .container {
+            transition: all 0.5s ease-in-out;
+            box-sizing: border-box;
+            overflow: hidden; 
+            max-height: 85vh; 
+        }
+        .text-container {
+            min-height: 5rem; 
+        }
+        
+        /* Wrapper for vertical sliding effect */
+        #screensWrapper {
+            display: flex;
+            flex-direction: column; 
+            height: 200%; 
+            transition: transform 0.8s ease-in-out; 
+        }
+        .screen {
+            height: 50%; 
+            flex-shrink: 0; 
+            padding: 0 1rem; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Typewriter Animation styles */
+        .typewriter {
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 0.15em solid #db2777; 
+            font-weight: 600;
+        }
+
+        /* --- Modal and Grid Styling --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8); 
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .grid-modal-content {
+            margin: auto;
+            display: block;
+            width: 90%;
+            max-width: 450px; /* Reduced to fit 2x2 nicely */
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            animation: zoom 0.5s;
+        }
+        @keyframes zoom {
+            from {transform: scale(0.1)} 
+            to {transform: scale(1)}
+        }
+
+        .image-grid {
+            display: grid;
+            /* Changed to 2 columns for a 2x2 layout */
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        @media (max-width: 640px) {
+            .image-grid {
+                /* Mobile layout stays 2 columns */
+                grid-template-columns: repeat(2, 1fr); 
+            }
+        }
+
+        .grid-image {
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%; /* Make images square */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        /* --- End Modal and Grid Styling --- */
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+        }
+
+        /* Style the Buttons */
+        .action-button {
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+        .action-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <!--
+        INSTRUCTIONS FOR YOUR FILES:
+        1. BACKGROUND SONG: Put your song file (e.g., song.mp3) in the same folder. Update AUDIO_BG_URL.
+        2. PROPOSAL AUDIO: Put the voice message file (e.g., proposal.mp3) in the same folder. Update AUDIO_PROPOSAL_URL.
+        3. PHOTO: Put her photo (e.g., her_photo.jpg) in the same folder. Update IMAGE_URL.
+        4. GRID PHOTOS: You must upload 4 flower photos and 4 chocolate photos, and update the FLOWER_IMAGE_URLS and CHOCOLATE_IMAGE_URLS arrays below.
+    -->
+    <audio id="backgroundMusic" src="song.mp3" loop preload="auto"></audio>
+    <audio id="proposalAudio" src="proposal.mp3" preload="auto"></audio>
+
+    <div class="container max-w-lg mx-4 p-8 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl text-center">
+        
+        <!-- WRAPPER FOR VERTICAL SLIDING -->
+        <div id="screensWrapper">
+
+            <!-- SCREEN 1: INITIAL SCREEN CONTENT -->
+            <div id="initialScreen" class="screen">
+                
+                <div class="text-container mb-6 text-gray-800 text-xl">
+                    <p id="typewriter1" class="font-semibold text-pink-700"></p>
+                </div>
+                
+                <!-- Her Photo -->
+                <div id="photoContainer" class="relative w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-pink-400 shadow-xl mb-6 opacity-0 transition duration-1000">
+                    <img id="herPhoto"
+                         src="image.png" 
+                         alt="The Most Beautiful Person" 
+                         class="w-full h-full object-cover"
+                         onerror="this.onerror=null; this.src=image.png"
+                         loading="lazy">
+                </div>
+
+                <p id="headphoneMessage" class="text-gray-700 text-lg mb-8 mt-2 opacity-0 transition duration-1000">
+                    I have a message for you, I would suggest **headphones** for that.
+                </p>
+
+                <!-- The Ready Button (will slide up with the screen) -->
+                <button id="readyButton"
+                        class="action-button px-8 py-3 text-lg font-bold text-white rounded-full bg-pink-600 opacity-0 hover:bg-pink-700 focus:outline-none focus:ring-4 focus:ring-pink-300 transition duration-500">
+                    Ready? <span class="text-xl ml-1">👉</span>
+                </button>
+            </div>
+
+            <!-- SCREEN 2: PROPOSAL CONTENT -->
+            <div id="proposalScreen" class="screen">
+                
+                <!-- Main Proposal Message & Audio Player -->
+                <div id="proposalMessage" class="mt-4 opacity-0 transition duration-1000 ease-in-out w-full">
+                    
+                    <p class="text-4xl text-pink-700 font-extrabold tracking-tight mb-8">
+                        My intentions for us.
+                    </p>
+
+                    <!-- Audio Playback Controls -->
+                    <div id="audioPlayer" class="flex flex-col items-center mb-10">
+                        <p class="text-xl text-gray-800 mb-4 font-semibold italic">
+                            Listen to my message:
+                        </p>
+                        <div class="flex items-center space-x-4">
+                            <button id="playPauseButton" class="px-4 py-2 bg-pink-600 text-white rounded-full font-bold shadow-lg hover:bg-pink-700 transition">
+                                ▶️ Play Message
+                            </button>
+                            <p id="audioStatus" class="text-sm text-gray-600">Paused</p>
+                        </div>
+                    </div>
+                    <!-- End Audio Playback Controls -->
+
+                </div>
+
+                <!-- Action Buttons -->
+                <div id="actionButtons" class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <button id="flowersButton"
+                            class="action-button px-6 py-3 text-lg font-bold text-white rounded-full bg-red-500 hover:bg-red-600 transition duration-300">
+                        Receive Flowers 🌹
+                    </button>
+                    <button id="chocolatesButton"
+                            class="action-button px-6 py-3 text-lg font-bold text-white rounded-full bg-yellow-600 hover:bg-yellow-700 transition duration-300">
+                        Receive Chocolates 🍫
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal for displaying the image grid -->
+    <div id="myModal" class="modal" onclick="closeModal()">
+        <span class="close" onclick="closeModal(event)">&times;</span>
+        <div class="grid-modal-content" onclick="event.stopPropagation()">
+            <div id="imageGrid" class="image-grid">
+                <!-- Dynamic 2x2 images will be placed here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // --- Configuration ---
+        // IMPORTANT: Replace 'her_photo.jpg', 'proposal.mp3', and 'song.mp3' with your actual file names
+        const IMAGE_URL = 'her_photo.jpg'; 
+        const AUDIO_PROPOSAL_URL = 'proposal.mp3'; 
+        const AUDIO_BG_URL = 'song.mp3'; 
+        
+        // V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V 
+        // -----------------------------------------------------------------------
+        // ADD YOUR 4 FLOWER AND 4 CHOCOLATE PHOTO FILENAMES HERE
+        // -----------------------------------------------------------------------
+        
+        const FLOWER_IMAGE_URLS = [
+            'flower_pic_1.jpg',  // Replace with actual Flower Photo 1 filename
+            'flower_pic_2.jpg',  // Replace with actual Flower Photo 2 filename
+            'flower_pic_3.jpg',  // Replace with actual Flower Photo 3 filename
+            'flower_pic_4.jpg'   // Replace with actual Flower Photo 4 filename
+        ];
+
+        const CHOCOLATE_IMAGE_URLS = [
+            'choc_pic_1.png',   // Replace with actual Chocolate Photo 1 filename
+            'choc_pic_2.png',   // Replace with actual Chocolate Photo 2 filename
+            'choc_pic_3.png',   // Replace with actual Chocolate Photo 3 filename
+            'choc_pic_4.png'    // Replace with actual Chocolate Photo 4 filename
+        ];
+        
+        // ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^
+
+        // Typewriter messages (Updated)
+        const MESSAGE_1 = "Hi Tripti, this is Ankit. I designed this special space just for you.";
+
+        // --- DOM Elements ---
+        const bgMusic = document.getElementById('backgroundMusic');
+        const proposalAudio = document.getElementById('proposalAudio');
+        const herPhoto = document.getElementById('herPhoto');
+        const typewriter1El = document.getElementById('typewriter1');
+        const readyButton = document.getElementById('readyButton');
+        const screensWrapper = document.getElementById('screensWrapper');
+        const photoContainer = document.getElementById('photoContainer');
+        const headphoneMessage = document.getElementById('headphoneMessage');
+        const proposalMessage = document.getElementById('proposalMessage');
+        const flowersButton = document.getElementById('flowersButton');
+        const chocolatesButton = document.getElementById('chocolatesButton');
+        const myModal = document.getElementById('myModal');
+        const imageGrid = document.getElementById('imageGrid'); // New grid container
+        
+        // Audio Control Elements
+        const playPauseButton = document.getElementById('playPauseButton');
+        const audioStatus = document.getElementById('audioStatus');
+        
+        let isAudioPlaying = false; // State for proposal audio
+
+        // --- Initialization ---
+        bgMusic.src = AUDIO_BG_URL;
+        proposalAudio.src = AUDIO_PROPOSAL_URL;
+        herPhoto.src = IMAGE_URL;
+        
+        // --- Helper Functions ---
+
+        /**
+         * Simulates a typewriter effect on a given element.
+         */
+        function startTypewriter(element, text, onComplete) {
+            element.classList.add('typewriter');
+            let i = 0;
+            const speed = 70; 
+
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typewriter');
+                    element.style.borderRight = 'none'; 
+                    if (onComplete) onComplete();
+                }
+            }
+            element.textContent = ''; 
+            type();
+        }
+
+        /**
+         * Shows the modal with the 2x2 image grid using the provided array of image URLs.
+         * @param {string[]} imageArray - Array of 4 image URLs to display.
+         */
+        function openImageGrid(imageArray) {
+            imageGrid.innerHTML = ''; // Clear previous images
+            
+            // Generate the grid items using the provided array
+            imageArray.forEach(imageUrl => {
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'grid-image';
+                // Use the image URL as a background image
+                imgDiv.style.backgroundImage = `url(${imageUrl})`;
+                
+                // Add an error handler for placeholder images
+                imgDiv.onerror = function() {
+                    this.style.backgroundImage = `url(https://placehold.co/400x400/cccccc/333?text=Photo+Missing)`;
+                };
+
+                imageGrid.appendChild(imgDiv);
+            });
+
+            myModal.style.display = 'flex';
+            // Trigger fade-in
+            setTimeout(() => {
+                myModal.style.opacity = 1;
+            }, 10);
+        }
+
+        /**
+         * Closes the modal.
+         */
+        function closeModal(event) {
+             if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+            // Trigger fade-out
+            myModal.style.opacity = 0;
+            setTimeout(() => {
+                myModal.style.display = 'none';
+                imageGrid.innerHTML = ''; // Clear the grid
+            }, 300);
+        }
+        
+        /**
+         * Toggles the proposal audio playback.
+         */
+        function toggleProposalAudio() {
+            if (isAudioPlaying) {
+                proposalAudio.pause();
+                isAudioPlaying = false;
+                playPauseButton.innerHTML = '▶️ Play Message';
+                audioStatus.textContent = 'Paused';
+            } else {
+                // Stop background music temporarily (optional, but good for focus)
+                bgMusic.volume = 0.3; 
+                proposalAudio.play().catch(e => console.error("Audio playback failed:", e));
+                isAudioPlaying = true;
+                playPauseButton.innerHTML = '⏸️ Pause Message';
+                audioStatus.textContent = 'Playing...';
+            }
+        }
+
+        // --- Event Listeners for Audio Control ---
+        playPauseButton.addEventListener('click', toggleProposalAudio);
+
+        proposalAudio.addEventListener('ended', () => {
+            isAudioPlaying = false;
+            playPauseButton.innerHTML = '▶️ Play Message';
+            audioStatus.textContent = 'Finished';
+            bgMusic.volume = 1.0; // Restore background music volume
+        });
+
+        // --- Sequence 1: Initial Typewriter ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Autoplay music handler (will be unblocked by user interaction)
+            bgMusic.play().catch(e => console.log("Background music autoplay blocked.")); 
+            bgMusic.volume=0.5;
+            
+            startTypewriter(typewriter1El, MESSAGE_1, () => {
+                // On completion of Typewriter 1:
+                photoContainer.style.opacity = 1;
+                setTimeout(() => {
+                    headphoneMessage.style.opacity = 1;
+                    readyButton.style.opacity = 1;
+                }, 500); 
+            });
+        });
+
+        // --- Sequence 2: Ready Button Click (VERTICAL SLIDE) ---
+        readyButton.addEventListener('click', () => {
+            // 1. Ensure music is playing (if blocked initially)
+            bgMusic.play().catch(e => console.error("Could not play music."));
+
+            // 2. VERTICAL SLIDE the screens wrapper UP (-50% of the total height)
+            screensWrapper.style.transform = 'translateY(-50%)';
+            
+            // 3. Show the proposal content (including the audio player)
+            setTimeout(() => {
+                proposalMessage.style.opacity = 1;
+                // No automatic audio playback here. User must press play button.
+            }, 1000); 
+        });
+
+        // --- Sequence 3: Image Grid Buttons (2x2 Grid using arrays) ---
+        
+        // Flowers Button: Show 2x2 grid of flower images
+        flowersButton.addEventListener('click', () => {
+            // Ensure proposal audio stops when modal opens
+            if (isAudioPlaying) toggleProposalAudio(); 
+            // Pass the array of flower image URLs
+            openImageGrid(FLOWER_IMAGE_URLS);
+        });
+
+        // Chocolates Button: Show 2x2 grid of chocolate images
+        chocolatesButton.addEventListener('click', () => {
+            // Ensure proposal audio stops when modal opens
+            if (isAudioPlaying) toggleProposalAudio();
+            // Pass the array of chocolate image URLs
+            openImageGrid(CHOCOLATE_IMAGE_URLS);
+        });
+        
+    </script>
+</body>
+</html>
